@@ -1,0 +1,128 @@
+// Auto-converted from /tmp/df-flate2-1.1.9/flate2-1.1.9/src/lib.rs
+
+#[cfg(not(feature = "any_impl" ))] compile_error!("You need to choose a zlib backend");
+pub use crate::crc::{ Crc, CrcReader, CrcWriter };
+pub use crate::gz::GzBuilder;
+pub use crate::gz::GzHeader;
+pub use crate::mem::{ Compress, CompressError, Decompress, DecompressError, Status };
+pub use crate::mem::{ FlushCompress, FlushDecompress };
+mod bufreader;
+mod crc;
+mod deflate;
+mod ffi;
+mod gz;
+mod mem;
+mod zio;
+mod zlib;
+/// Types which operate over [`Read`] streams, both encoders and decoders for
+/// various formats.
+/// 
+/// Note that the `read` decoder types may read past the end of the compressed
+/// data while decoding. If the caller requires subsequent reads to start
+/// immediately following the compressed data wrap the `Read` type in a
+/// [`BufReader`] and use the `BufReader` with the equivalent decoder from the
+/// `bufread` module and also for the subsequent reads.
+/// 
+/// [`Read`]: https://doc.rust-lang.org/std/io/trait.Read.html
+/// [`BufReader`]: https://doc.rust-lang.org/std/io/struct.BufReader.html
+pub mod read {
+ pub use crate::deflate::read::DeflateDecoder;
+ pub use crate::deflate::read::DeflateEncoder;
+ pub use crate::gz::read::GzDecoder;
+ pub use crate::gz::read::GzEncoder;
+ pub use crate::gz::read::MultiGzDecoder;
+ pub use crate::zlib::read::ZlibDecoder;
+ pub use crate::zlib::read::ZlibEncoder
+}
+
+/// Types which operate over [`Write`] streams, both encoders and decoders for
+/// various formats.
+/// 
+/// [`Write`]: https://doc.rust-lang.org/std/io/trait.Write.html
+pub mod write {
+ pub use crate::deflate::write::DeflateDecoder;
+ pub use crate::deflate::write::DeflateEncoder;
+ pub use crate::gz::write::GzDecoder;
+ pub use crate::gz::write::GzEncoder;
+ pub use crate::gz::write::MultiGzDecoder;
+ pub use crate::zlib::write::ZlibDecoder;
+ pub use crate::zlib::write::ZlibEncoder
+}
+
+/// Types which operate over [`BufRead`] streams, both encoders and decoders for
+/// various formats.
+/// 
+/// [`BufRead`]: https://doc.rust-lang.org/std/io/trait.BufRead.html
+pub mod bufread {
+ pub use crate::deflate::bufread::DeflateDecoder;
+ pub use crate::deflate::bufread::DeflateEncoder;
+ pub use crate::gz::bufread::GzDecoder;
+ pub use crate::gz::bufread::GzEncoder;
+ pub use crate::gz::bufread::MultiGzDecoder;
+ pub use crate::zlib::bufread::ZlibDecoder;
+ pub use crate::zlib::bufread::ZlibEncoder
+}
+
+fn _assert_send_sync() {
+ fn _assert_send_sync<T: Send + Sync>() {
+ }
+ 
+ _assert_send_sync::<read::DeflateEncoder<&[u8]> >();
+ _assert_send_sync::<read::DeflateDecoder<&[u8]> >();
+ _assert_send_sync::<read::ZlibEncoder<&[u8]> >();
+ _assert_send_sync::<read::ZlibDecoder<&[u8]> >();
+ _assert_send_sync::<read::GzEncoder<&[u8]> >();
+ _assert_send_sync::<read::GzDecoder<&[u8]> >();
+ _assert_send_sync::<read::MultiGzDecoder<&[u8]> >();
+ _assert_send_sync::<write::DeflateEncoder < Vec<u8> > >();
+ _assert_send_sync::<write::DeflateDecoder < Vec<u8> > >();
+ _assert_send_sync::<write::ZlibEncoder < Vec<u8> > >();
+ _assert_send_sync::<write::ZlibDecoder < Vec<u8> > >();
+ _assert_send_sync::<write::GzEncoder < Vec<u8> > >();
+ _assert_send_sync::<write::GzDecoder < Vec<u8> > >()
+}
+
+/// When compressing data, the compression level can be specified by a value in
+/// this struct.
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub struct Compression {
+ (u32),
+}
+
+impl Compression {
+ pub fn new(level: u32) -> Compression {
+ Compression(level)
+ }
+ 
+ pub fn none() -> Compression {
+ Compression(0)
+ }
+ 
+ pub fn fast() -> Compression {
+ Compression(1)
+ }
+ 
+ pub fn best() -> Compression {
+ Compression(9)
+ }
+ 
+ pub fn level(&self) -> u32 {
+ self.0
+ }
+ 
+}
+
+impl Default for Compression {
+ fn default() -> Compression {
+ Compression(6)
+ }
+ 
+}
+
+#[cfg(test)]
+fn random_bytes() -> impl Iterator<_> {
+ use rand::Rng;
+ use std::iter;
+ iter::repeat(()).map(| _ | rand::rng().random())
+}
+
